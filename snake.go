@@ -257,9 +257,9 @@ func (game *Game) start() {
 	game.feed.rePlace()
 	game.score = 0
 }
-func (player *Snake) draw() {
-	rl.DrawRectangleV(player.position, rl.Vector2{10, 10}, player.color)
-	for _, cube := range player.cubes {
+func (snake *Snake) draw() {
+	rl.DrawRectangleV(snake.position, rl.Vector2{10, 10}, snake.color)
+	for _, cube := range snake.cubes {
 		rl.DrawRectangleV(cube.position, rl.Vector2{10, 10}, cube.color)
 	}
 }
@@ -271,21 +271,20 @@ func (feed *Feed) rePlace() {
 	var freePlaces []rl.Vector2
 	freePlaces = places
 	// note: places is variable being declared above main function.
-	var elemsToDel []int
 	for i, position := range freePlaces {
+		if len(freePlaces) > i {
+			break
+		}
 		for _, cube := range game.player.cubes {
 			if cube.position == position {
 
-				elemsToDel = append(elemsToDel, i)
+				freePlaces = append(freePlaces[:i], freePlaces[i+1:]...)
 			}
 		}
 		if game.player.position == position {
 
-			elemsToDel = append(elemsToDel, i)
+			freePlaces = append(freePlaces[:i], freePlaces[i+1:]...)
 		}
-	}
-	for p, i := range elemsToDel {
-		freePlaces = append(freePlaces[:i-p], freePlaces[i-p+1:]...)
 	}
 	feed.position = freePlaces[rand.Intn(len(freePlaces))]
 }
