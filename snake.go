@@ -6,6 +6,12 @@ import (
 	"strconv"
 )
 
+var settings = map[string]int{
+	"mode":      0, //0 - normal.
+	"difficult": 0, //0 - easy.
+	"FPS":       0, //0 - not showed, 1 - showed.
+}
+
 // GUI.
 type Button struct {
 	position rl.Vector2
@@ -45,11 +51,11 @@ type Game struct {
 	// menues.
 	menu         Menu
 	gameOverMenu Menu
+	settingsMenu Menu
 
 	screenWidth  int32
 	screenHeight int32
 	nameWindow   string
-	showedFPS    bool
 	background   rl.Color
 
 	gameOver  bool
@@ -60,7 +66,7 @@ type Game struct {
 	bestScore int32
 }
 
-var game Game           // game
+var game Game           // game.
 var places []rl.Vector2 // all places.
 func main() {
 
@@ -68,9 +74,9 @@ func main() {
 	rl.InitWindow(game.screenWidth, game.screenHeight, game.nameWindow)
 
 	rl.SetTargetFPS(20)
-
 	for !rl.WindowShouldClose() {
 		game.update()
+
 	}
 	rl.CloseWindow()
 }
@@ -80,11 +86,10 @@ func (g *Game) init() {
 	g.screenWidth = 500
 	g.screenHeight = 500
 	g.nameWindow = "Snake"
-	g.showedFPS = true
 	g.background = rl.Lime
 
 	// game initilization.
-	g.gameOver = false
+	g.gameOver = true
 	// fill places(variable).
 	for x := 0; int32(x) < g.screenWidth; x += 10 {
 		for y := 0; int32(y) < g.screenHeight; y += 10 {
@@ -111,6 +116,16 @@ func (g *Game) init() {
 	var bMenu = Button{rl.Vector2{float32((g.screenWidth - (g.screenWidth - 20))) / 2, float32((g.screenHeight + 50)) / 2}, "Menu", rl.Vector2{float32(g.screenWidth - 20), 100}, rl.Orange, 50}
 	g.gameOverMenu = Menu{
 		buttons:    []Button{bMenu},
+		showed:     false,
+		background: g.background,
+	}
+	// settingsMenu initilization.
+	var bMode = Button{rl.Vector2{0, 0}, "Mode: Normal", rl.Vector2{float32(g.screenWidth), 100}, rl.Gray, 50}
+	var bDifficult = Button{rl.Vector2{0, 100}, "Difficult: Easy", rl.Vector2{float32(g.screenWidth), 100}, rl.DarkGray, 50}
+	var bShowedFPS = Button{rl.Vector2{0, 200}, "FPS showed: NO", rl.Vector2{float32(g.screenWidth), 100}, rl.Brown, 50}
+	var bCancel = Button{rl.Vector2{0, 300}, "Cancel", rl.Vector2{float32(g.screenWidth), 100}, rl.Gold, 50}
+	g.settingsMenu = Menu{
+		buttons:    []Button{bMode, bDifficult, bShowedFPS, bCancel},
 		showed:     false,
 		background: g.background,
 	}
@@ -188,6 +203,9 @@ func (g *Game) update() {
 		switch {
 		case g.menu.buttons[0].isClicked(): // start.
 			g.start()
+		case g.menu.buttons[1].isClicked(): // settings.
+			g.menu.showed = false
+			g.settingsMenu.showed = true
 		case g.menu.buttons[2].isClicked(): // exit.
 			rl.CloseWindow()
 		}
@@ -200,6 +218,22 @@ func (g *Game) update() {
 			g.player.cubes = []Cube{}
 			g.player.position = rl.Vector2{float32(g.screenWidth / 2), float32(g.screenHeight / 2)}
 		}
+	} else if g.settingsMenu.showed {
+		switch {
+		case g.settingsMenu.buttons[2].isClicked(): // settings.
+			if settings["FPS"] == 1 {
+				settings["FPS"] = 0
+
+				g.settingsMenu.buttons[2].text = "FPS showed: NO"
+			} else {
+				settings["FPS"] = 1
+
+				g.settingsMenu.buttons[2].text = "FPS showed: YES"
+			}
+		case g.settingsMenu.buttons[3].isClicked(): // Cancel.
+			g.menu.showed = true
+			g.settingsMenu.showed = false
+		}
 	}
 	g.draw()
 }
@@ -210,7 +244,7 @@ func (g *Game) draw() {
 	// showing menu.
 	if g.menu.showed {
 		g.menu.draw()
-	} else if g.gameOver {
+	} else if g.gameOver && g.gameOverMenu.showed {
 		g.player.draw()
 		g.gameOverMenu.draw()
 		rl.DrawText("SCORE: "+strconv.Itoa(int(g.score)), (game.screenWidth-rl.MeasureText("SCORE: "+strconv.Itoa(int(g.score)), 50))/2, game.screenHeight/2-50, 50, rl.White)
@@ -221,10 +255,12 @@ func (g *Game) draw() {
 		// score.
 
 		rl.DrawText("SCORE: "+strconv.Itoa(int(g.score)), (game.screenWidth-rl.MeasureText("SCORE: "+strconv.Itoa(int(g.score)), 20))/2, 0, 20, rl.White)
+	} else if g.settingsMenu.showed {
+		g.settingsMenu.draw()
 	}
 
 	// drawing FPS.
-	if g.showedFPS {
+	if settings["FPS"] == 1 {
 		rl.DrawText(strconv.Itoa(int(rl.GetFPS())), 0, 0, 20, rl.White)
 	}
 	rl.ClearBackground(rl.Black)
