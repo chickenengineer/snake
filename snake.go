@@ -6,9 +6,10 @@ import (
 	"strconv"
 )
 
+// settings.
 var settings = map[string]int{
 	"mode":      0, //0 - normal.
-	"difficult": 0, //0 - easy.
+	"difficult": 0, //0 - easy, 1 - normal, 2 - hard.
 	"FPS":       0, //0 - not showed, 1 - showed.
 }
 
@@ -73,7 +74,7 @@ func main() {
 	game.init()
 	rl.InitWindow(game.screenWidth, game.screenHeight, game.nameWindow)
 
-	rl.SetTargetFPS(20)
+	rl.SetTargetFPS(60)
 	for !rl.WindowShouldClose() {
 		game.update()
 
@@ -132,12 +133,11 @@ func (g *Game) init() {
 }
 
 var addPosition rl.Vector2
+var latestSaveTime float32
 
 func (g *Game) update() {
 
 	if !g.menu.showed && !g.gameOver {
-		// game started.
-		p := &g.player
 		// keyChecker.
 		switch {
 		case rl.IsKeyPressed(rl.KeyW) && (addPosition != rl.Vector2{0, 10}):
@@ -150,54 +150,61 @@ func (g *Game) update() {
 			addPosition = rl.Vector2{10, 0}
 
 		}
-		// move head.
-		p.pastPosition = p.position
-		p.nextPosition = rl.Vector2{addPosition.X + p.position.X, addPosition.Y + p.position.Y}
-		// teleportation head.
-		switch {
-		case p.nextPosition.X == -10:
-			p.nextPosition.X = float32(g.screenWidth - 10)
-		case p.nextPosition.X == float32(g.screenWidth):
-			p.nextPosition.X = 0
-		case p.nextPosition.Y == -10:
-			p.nextPosition.Y = float32(g.screenHeight - 10)
-		case p.nextPosition.Y == float32(g.screenHeight):
-			p.nextPosition.Y = 0
-		}
-		p.position = p.nextPosition
+		if latestSaveTime < (rl.GetTime() - 0.05 + 0.01*float32(settings["difficult"])) {
 
-		// move body.
+			// game started.
+			latestSaveTime = rl.GetTime()
+			p := &g.player
 
-		if len(p.cubes) != 0 {
-			// first cube.
-			cube := &p.cubes[0]
-			cube.pastPosition = cube.position
-			cube.position = p.pastPosition
-			// next cubes.
-			if len(p.cubes) > 1 {
-				for i := range p.cubes[1:] {
-					p.cubes[i+1].pastPosition = p.cubes[i+1].position
-					p.cubes[i+1].position = p.cubes[i].pastPosition
-					// checking a collision.
-					if p.position == p.cubes[i+1].position {
-						p.die()
+			// move head.
+			p.pastPosition = p.position
+			p.nextPosition = rl.Vector2{addPosition.X + p.position.X, addPosition.Y + p.position.Y}
+			// teleportation head.
+			switch {
+			case p.nextPosition.X == -10:
+				p.nextPosition.X = float32(g.screenWidth - 10)
+			case p.nextPosition.X == float32(g.screenWidth):
+				p.nextPosition.X = 0
+			case p.nextPosition.Y == -10:
+				p.nextPosition.Y = float32(g.screenHeight - 10)
+			case p.nextPosition.Y == float32(g.screenHeight):
+				p.nextPosition.Y = 0
+			}
+			p.position = p.nextPosition
+
+			// move body.
+
+			if len(p.cubes) != 0 {
+				// first cube.
+				cube := &p.cubes[0]
+				cube.pastPosition = cube.position
+				cube.position = p.pastPosition
+				// next cubes.
+				if len(p.cubes) > 1 {
+					for i := range p.cubes[1:] {
+						p.cubes[i+1].pastPosition = p.cubes[i+1].position
+						p.cubes[i+1].position = p.cubes[i].pastPosition
+						// checking a collision.
+						if p.position == p.cubes[i+1].position {
+							p.die()
+						}
 					}
 				}
+
 			}
 
-		}
-
-		// feedChecker.
-		if g.feed.position == p.position {
-			for i := 1; int32(i) <= g.feed.power; i++ {
-				if len(p.cubes) == 0 {
-					p.cubes = append(p.cubes, Cube{p.position, rl.Red, p.position})
-				} else {
-					p.cubes = append(p.cubes, Cube{p.cubes[len(p.cubes)-1].pastPosition, rl.Red, p.cubes[len(p.cubes)-1].pastPosition})
+			// feedChecker.
+			if g.feed.position == p.position {
+				for i := 1; int32(i) <= g.feed.power; i++ {
+					if len(p.cubes) == 0 {
+						p.cubes = append(p.cubes, Cube{p.position, rl.Red, p.position})
+					} else {
+						p.cubes = append(p.cubes, Cube{p.cubes[len(p.cubes)-1].pastPosition, rl.Red, p.cubes[len(p.cubes)-1].pastPosition})
+					}
 				}
+				g.feed.rePlace()
+				g.score += g.feed.power
 			}
-			g.feed.rePlace()
-			g.score += g.feed.power
 		}
 	} else if g.menu.showed {
 		switch {
@@ -220,6 +227,18 @@ func (g *Game) update() {
 		}
 	} else if g.settingsMenu.showed {
 		switch {
+		case g.settingsMenu.buttons[1].isClicked(): // difficult.
+			switch settings["difficult"] {
+			case 0:
+				settings["difficult"]++
+				g.settingsMenu.buttons[1].text = "Difficult: Normal"
+			case 1:
+				settings["difficult"]++
+				g.settingsMenu.buttons[1].text = "Difficult: Hard"
+			case 2:
+				settings["difficult"] = 0
+				g.settingsMenu.buttons[1].text = "Difficult: Easy"
+			}
 		case g.settingsMenu.buttons[2].isClicked(): // settings.
 			if settings["FPS"] == 1 {
 				settings["FPS"] = 0
@@ -230,7 +249,7 @@ func (g *Game) update() {
 
 				g.settingsMenu.buttons[2].text = "FPS showed: YES"
 			}
-		case g.settingsMenu.buttons[3].isClicked(): // Cancel.
+		case g.settingsMenu.buttons[3].isClicked(): // cancel.
 			g.menu.showed = true
 			g.settingsMenu.showed = false
 		}
@@ -292,6 +311,7 @@ func (game *Game) start() {
 	game.menu.showed = false
 	game.feed.rePlace()
 	game.score = 0
+	game.feed.power = int32(10 + 10*settings["difficult"])
 }
 func (snake *Snake) draw() {
 	rl.DrawRectangleV(snake.position, rl.Vector2{10, 10}, snake.color)
