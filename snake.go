@@ -235,9 +235,11 @@ func (g *Game) update() {
 			case 1:
 				settings["difficult"]++
 				g.settingsMenu.buttons[1].text = "Difficult: Hard"
+				g.settingsMenu.buttons[1].color = rl.Red
 			case 2:
 				settings["difficult"] = 0
 				g.settingsMenu.buttons[1].text = "Difficult: Easy"
+				g.settingsMenu.buttons[1].color = rl.DarkGray
 			}
 		case g.settingsMenu.buttons[2].isClicked(): // settings.
 			if settings["FPS"] == 1 {
@@ -327,19 +329,17 @@ func (feed *Feed) rePlace() {
 	var freePlaces []rl.Vector2
 	freePlaces = places
 	// note: places is variable being declared above main function.
+	var a int // helpful variable.
 	for i, position := range freePlaces {
-		if len(freePlaces) > i {
-			break
-		}
 		for _, cube := range game.player.cubes {
 			if cube.position == position {
-
-				freePlaces = append(freePlaces[:i], freePlaces[i+1:]...)
+				freePlaces = append(freePlaces[i-a-1:], freePlaces[:i-a]...)
+				a++
 			}
 		}
 		if game.player.position == position {
-
-			freePlaces = append(freePlaces[:i], freePlaces[i+1:]...)
+			freePlaces = append(freePlaces[i-a-1:], freePlaces[:i-a]...)
+			a++
 		}
 	}
 	feed.position = freePlaces[rand.Intn(len(freePlaces))]
