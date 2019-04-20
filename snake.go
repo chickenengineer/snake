@@ -137,7 +137,7 @@ var latestSaveTime float32
 
 func (g *Game) update() {
 
-	if !g.menu.showed && !g.gameOver {
+	if !g.gameOver { // if game is started.
 		// keyChecker.
 		switch {
 		case rl.IsKeyPressed(rl.KeyW) && (addPosition != rl.Vector2{0, 10}):
@@ -206,7 +206,7 @@ func (g *Game) update() {
 				g.score += g.feed.power
 			}
 		}
-	} else if g.menu.showed {
+	} else if g.menu.showed { // if menu is showed.
 		switch {
 		case g.menu.buttons[0].isClicked(): // start.
 			g.start()
@@ -216,7 +216,7 @@ func (g *Game) update() {
 		case g.menu.buttons[2].isClicked(): // exit.
 			rl.CloseWindow()
 		}
-	} else if g.gameOverMenu.showed {
+	} else if g.gameOverMenu.showed { // if gameOverMenu is showed.
 		switch {
 		case g.gameOverMenu.buttons[0].isClicked():
 			g.gameOverMenu.showed = false
@@ -225,7 +225,7 @@ func (g *Game) update() {
 			g.player.cubes = []Cube{}
 			g.player.position = rl.Vector2{float32(g.screenWidth / 2), float32(g.screenHeight / 2)}
 		}
-	} else if g.settingsMenu.showed {
+	} else if g.settingsMenu.showed { // if settingsMenu is showed.
 		switch {
 		case g.settingsMenu.buttons[1].isClicked(): // difficult.
 			switch settings["difficult"] {
