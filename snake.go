@@ -331,6 +331,9 @@ func (feed *Feed) rePlace() {
 	// note: places is variable being declared above main function.
 	var a int // helpful variable.
 	for i, position := range freePlaces {
+		if len(freePlaces) < i {
+			break
+		}
 		for _, cube := range game.player.cubes {
 			if cube.position == position {
 				freePlaces = append(freePlaces[i-a-1:], freePlaces[:i-a]...)
