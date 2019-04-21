@@ -332,13 +332,14 @@ func (feed *Feed) rePlace() {
 	var a int                                     // helpful variable.
 	freePlaces = append(freePlaces, rl.Vector2{}) // add any obj to end of slice.
 	for i, position := range freePlaces {
-		if !(len(freePlaces) < i) { // exclude latest obj.
+		if len(freePlaces) == i-1 { // exclude latest obj.
 			break
 		}
 		for _, cube := range game.player.cubes {
 			if cube.position == position {
 				freePlaces = append(freePlaces[:i-a], freePlaces[i-a+1:]...)
 				a++
+				break
 			}
 		}
 		if game.player.position == position {
