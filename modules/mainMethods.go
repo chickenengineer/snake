@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	game   *Game        // game.
+	game   *Game        // game (alias is "g" in methods).
 	places []rl.Vector2 // all places.
 )
 
@@ -60,8 +60,10 @@ func (g *Game) Init() {
 	}
 }
 
-var addPosition rl.Vector2
-var latestSaveTime float32
+var (
+	addPosition    rl.Vector2
+	latestSaveTime float32
+)
 
 func (g *Game) Update() {
 
@@ -231,8 +233,8 @@ func (feed *Feed) RePlace() {
 }
 
 func (button *Button) IsClicked() bool {
-	MousePosition := rl.GetMousePosition()
-	if rl.IsMouseButtonPressed(rl.MouseLeftButton) && ((MousePosition.X >= button.Position.X) && (MousePosition.Y >= button.Position.Y) && ((MousePosition.X <= button.Position.X+button.Size.X) && (MousePosition.Y <= button.Position.Y+button.Size.Y))) {
+	mousePosition := rl.GetMousePosition()
+	if rl.IsMouseButtonPressed(rl.MouseLeftButton) && ((mousePosition.X >= button.Position.X) && (mousePosition.Y >= button.Position.Y) && ((mousePosition.X <= button.Position.X+button.Size.X) && (mousePosition.Y <= button.Position.Y+button.Size.Y))) {
 		return true
 	}
 	return false

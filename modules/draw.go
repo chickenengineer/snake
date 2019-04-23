@@ -9,20 +9,19 @@ func (g *Game) Draw() {
 
 	rl.BeginDrawing()
 	// showing Menu.
-	if g.Menu.Showed {
+	if g.Menu.Showed { // if Menu is showed.
 		g.Menu.Draw()
-	} else if g.GameOver && g.GameOverMenu.Showed {
+	} else if g.GameOverMenu.Showed { // if GameOverMenu is showed.
 		g.Player.Draw()
 		g.GameOverMenu.Draw()
 		rl.DrawText("SCORE: "+strconv.Itoa(int(g.Score)), (g.ScreenWidth-rl.MeasureText("SCORE: "+strconv.Itoa(int(g.Score)), 50))/2, g.ScreenHeight/2-50, 50, rl.White)
-	} else if !g.GameOver {
+	} else if !g.GameOver { // if game is started.
 		// Drawing game.
 		g.Feed.Draw()
 		g.Player.Draw()
 		// Score.
-
 		rl.DrawText("SCORE: "+strconv.Itoa(int(g.Score)), (g.ScreenWidth-rl.MeasureText("SCORE: "+strconv.Itoa(int(g.Score)), 20))/2, 0, 20, rl.White)
-	} else if g.SettingsMenu.Showed {
+	} else if g.SettingsMenu.Showed { // if SettingsMenu is showed.
 		g.SettingsMenu.Draw()
 	}
 
@@ -46,8 +45,8 @@ func (Feed *Feed) Draw() {
 }
 
 func (Menu *Menu) Draw() {
-	for _, Button := range Menu.Buttons {
-		Button.Draw()
+	for _, button := range Menu.Buttons {
+		button.Draw()
 	}
 }
 
