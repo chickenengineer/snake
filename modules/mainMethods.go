@@ -8,10 +8,14 @@ import (
 var (
 	game   *Game        // game (alias is "g" in methods).
 	places []rl.Vector2 // all places.
+	Settings settings
 )
 
+// initilization. just once for execution of program.
 func (g *Game) Init() {
 	game = g
+	// Settings initilization.
+	Settings = settings{}
 	// window initilization.
 	g.ScreenWidth = 500
 	g.ScreenHeight = 500
@@ -78,11 +82,74 @@ func (g *Game) Update() {
 			addPosition = rl.Vector2{0, 10}
 		case rl.IsKeyPressed(rl.KeyD) && (addPosition != rl.Vector2{-10, 0}):
 			addPosition = rl.Vector2{10, 0}
-
 		}
-		if latestSaveTime < (rl.GetTime() - 0.05 + 0.01*float32(Settings["difficult"])) {
 
-			// game started. 1 frame.
+		if latestSaveTime < (rl.GetTime() - 0.05 + 0.01*float32(Settings.difficult)) {
+			g.Player.Move(g)
+		}
+	} else if g.Menu.Showed { // if Menu is Showed.
+		switch {
+		case g.Menu.Buttons[0].IsClicked(): // Start.
+			g.Start()
+		case g.Menu.Buttons[1].IsClicked(): // Settings.
+			g.Menu.Showed = false
+			g.SettingsMenu.Showed = true
+		case g.Menu.Buttons[2].IsClicked(): // exit.
+			rl.CloseWindow()
+		}
+	} else if g.GameOverMenu.Showed { // if GameOverMenu is Showed.
+		switch {
+		case g.GameOverMenu.Buttons[0].IsClicked():
+			g.GameOverMenu.Showed = false
+			g.Menu.Showed = true
+			// returning snake to Start.
+			g.Player.Cubes = []Cube{}
+			g.Player.Position = rl.Vector2{float32(g.ScreenWidth / 2), float32(g.ScreenHeight / 2)}
+		}
+	} else if g.SettingsMenu.Showed { // if SettingsMenu is Showed.
+		switch {
+		case g.SettingsMenu.Buttons[1].IsClicked(): // difficult.
+			switch Settings.difficult {
+			case 0:
+				Settings.difficult++
+				g.SettingsMenu.Buttons[1].Text = "Difficult: Normal"
+			case 1:
+				Settings.difficult++
+				g.SettingsMenu.Buttons[1].Text = "Difficult: Hard"
+				g.SettingsMenu.Buttons[1].Color = rl.Red
+			case 2:
+				Settings.difficult = 0
+				g.SettingsMenu.Buttons[1].Text = "Difficult: Easy"
+				g.SettingsMenu.Buttons[1].Color = rl.DarkGray
+			}
+		case g.SettingsMenu.Buttons[2].IsClicked(): // Settings.
+			if Settings.FPSShowed {
+				Settings.FPSShowed = false
+
+				g.SettingsMenu.Buttons[2].Text = "FPS Showed: NO"
+			} else {
+				Settings.FPSShowed = true
+
+				g.SettingsMenu.Buttons[2].Text = "FPS Showed: YES"
+			}
+		case g.SettingsMenu.Buttons[3].IsClicked(): // cancel.
+			g.Menu.Showed = true
+				g.SettingsMenu.Showed = false
+		}
+	}
+	g.Draw()
+}
+
+func (snake *Snake) Die() {
+	snake.Living = false
+	game.GameOver = true
+	if game.Score > game.BestScore {
+		game.BestScore = game.Score
+	}
+	game.GameOverMenu.Showed = true
+}
+
+func (snake *Snake) Move(g *Game){
 			latestSaveTime = rl.GetTime()
 			p := &g.Player
 
@@ -135,67 +202,6 @@ func (g *Game) Update() {
 				g.Feed.RePlace()
 				g.Score += g.Feed.Power
 			}
-		}
-	} else if g.Menu.Showed { // if Menu is Showed.
-		switch {
-		case g.Menu.Buttons[0].IsClicked(): // Start.
-			g.Start()
-		case g.Menu.Buttons[1].IsClicked(): // Settings.
-			g.Menu.Showed = false
-			g.SettingsMenu.Showed = true
-		case g.Menu.Buttons[2].IsClicked(): // exit.
-			rl.CloseWindow()
-		}
-	} else if g.GameOverMenu.Showed { // if GameOverMenu is Showed.
-		switch {
-		case g.GameOverMenu.Buttons[0].IsClicked():
-			g.GameOverMenu.Showed = false
-			g.Menu.Showed = true
-			// returning snake to Start.
-			g.Player.Cubes = []Cube{}
-			g.Player.Position = rl.Vector2{float32(g.ScreenWidth / 2), float32(g.ScreenHeight / 2)}
-		}
-	} else if g.SettingsMenu.Showed { // if SettingsMenu is Showed.
-		switch {
-		case g.SettingsMenu.Buttons[1].IsClicked(): // difficult.
-			switch Settings["difficult"] {
-			case 0:
-				Settings["difficult"]++
-				g.SettingsMenu.Buttons[1].Text = "Difficult: Normal"
-			case 1:
-				Settings["difficult"]++
-				g.SettingsMenu.Buttons[1].Text = "Difficult: Hard"
-				g.SettingsMenu.Buttons[1].Color = rl.Red
-			case 2:
-				Settings["difficult"] = 0
-				g.SettingsMenu.Buttons[1].Text = "Difficult: Easy"
-				g.SettingsMenu.Buttons[1].Color = rl.DarkGray
-			}
-		case g.SettingsMenu.Buttons[2].IsClicked(): // Settings.
-			if Settings["FPS"] == 1 {
-				Settings["FPS"] = 0
-
-				g.SettingsMenu.Buttons[2].Text = "FPS Showed: NO"
-			} else {
-				Settings["FPS"] = 1
-
-				g.SettingsMenu.Buttons[2].Text = "FPS Showed: YES"
-			}
-		case g.SettingsMenu.Buttons[3].IsClicked(): // cancel.
-			g.Menu.Showed = true
-			g.SettingsMenu.Showed = false
-		}
-	}
-	g.Draw()
-}
-
-func (snake *Snake) Die() {
-	snake.Living = false
-	game.GameOver = true
-	if game.Score > game.BestScore {
-		game.BestScore = game.Score
-	}
-	game.GameOverMenu.Showed = true
 }
 
 func (game *Game) Start() {
@@ -203,33 +209,19 @@ func (game *Game) Start() {
 	game.Menu.Showed = false
 	game.Feed.RePlace()
 	game.Score = 0
-	game.Feed.Power = int32(10 + 10*Settings["difficult"])
+	game.Feed.Power = int32(10 + 10*Settings.difficult)
 }
 
 func (feed *Feed) RePlace() {
-	var freePlaces []rl.Vector2
-	freePlaces = places
-	// note: places is variable being declared above main function.
-	var a int                                     // helpful variable.
-	freePlaces = append(freePlaces, rl.Vector2{}) // add any obj to end of slice.
-	for i, position := range freePlaces {
-		if len(freePlaces) == i-1 { // exclude latest obj.
-			break
-		}
-		for _, cube := range game.Player.Cubes {
-			if cube.Position == position {
-				freePlaces = append(freePlaces[:i-a], freePlaces[i-a+1:]...)
-				a++
-				break
-			}
-		}
-		if game.Player.Position == position {
-			freePlaces = append(freePlaces[:i-a], freePlaces[i-a+1:]...)
-			a++
+	var filledPlaces = append(getPosOfCubes(game.Player.Cubes),game.Player.Position) // positions of cubes + position of head.
+	var emptyPlaces []rl.Vector2
+	// note: places is variable being declared above methods.
+	for _, place := range places{
+		if !filled(place, filledPlaces) {
+			emptyPlaces = append(emptyPlaces,place)
 		}
 	}
-	freePlaces = freePlaces[:len(freePlaces)-2] // delete latest obj.
-	feed.Position = freePlaces[rand.Intn(len(freePlaces))]
+	feed.Position = emptyPlaces[rand.Intn(len(emptyPlaces))]
 }
 
 func (button *Button) IsClicked() bool {
@@ -239,3 +231,21 @@ func (button *Button) IsClicked() bool {
 	}
 	return false
 }
+
+func filled(place rl.Vector2,filledPlaces []rl.Vector2) bool{
+	for _,filledPlace := range filledPlaces{
+		if place == filledPlace{
+			return true
+		}
+	}
+	return false
+}
+
+func getPosOfCubes(cubes []Cube) []rl.Vector2{
+	var positions []rl.Vector2
+	for _, cube := range cubes{
+		positions = append(positions, cube.Position)
+	}
+	return positions
+}
+
