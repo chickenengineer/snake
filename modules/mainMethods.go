@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	game   *Game        // game (alias is "g" in methods).
-	places []rl.Vector2 // all places.
+	game     *Game        // game (alias is "g" in methods).
+	places   []rl.Vector2 // all places.
 	Settings settings
 )
 
-// initilization. just once for execution of program.
+// Init initilization. just once for execution of program.
 func (g *Game) Init() {
 	game = g
 	// Settings initilization.
@@ -134,7 +134,7 @@ func (g *Game) Update() {
 			}
 		case g.SettingsMenu.Buttons[3].IsClicked(): // cancel.
 			g.Menu.Showed = true
-				g.SettingsMenu.Showed = false
+			g.SettingsMenu.Showed = false
 		}
 	}
 	g.Draw()
@@ -149,59 +149,59 @@ func (snake *Snake) Die() {
 	game.GameOverMenu.Showed = true
 }
 
-func (snake *Snake) Move(g *Game){
-			latestSaveTime = rl.GetTime()
-			p := &g.Player
+func (snake *Snake) Move(g *Game) {
+	latestSaveTime = rl.GetTime()
+	p := &g.Player
 
-			// move head.
-			p.PastPosition = p.Position
-			p.NextPosition = rl.Vector2{addPosition.X + p.Position.X, addPosition.Y + p.Position.Y}
-			// teleportation head.
-			switch {
-			case p.NextPosition.X == -10:
-				p.NextPosition.X = float32(g.ScreenWidth - 10)
-			case p.NextPosition.X == float32(g.ScreenWidth):
-				p.NextPosition.X = 0
-			case p.NextPosition.Y == -10:
-				p.NextPosition.Y = float32(g.ScreenHeight - 10)
-			case p.NextPosition.Y == float32(g.ScreenHeight):
-				p.NextPosition.Y = 0
-			}
-			p.Position = p.NextPosition
+	// move head.
+	p.PastPosition = p.Position
+	p.NextPosition = rl.Vector2{addPosition.X + p.Position.X, addPosition.Y + p.Position.Y}
+	// teleportation head.
+	switch {
+	case p.NextPosition.X == -10:
+		p.NextPosition.X = float32(g.ScreenWidth - 10)
+	case p.NextPosition.X == float32(g.ScreenWidth):
+		p.NextPosition.X = 0
+	case p.NextPosition.Y == -10:
+		p.NextPosition.Y = float32(g.ScreenHeight - 10)
+	case p.NextPosition.Y == float32(g.ScreenHeight):
+		p.NextPosition.Y = 0
+	}
+	p.Position = p.NextPosition
 
-			// move body.
+	// move body.
 
-			if len(p.Cubes) != 0 {
-				// first cube.
-				cube := &p.Cubes[0]
-				cube.PastPosition = cube.Position
-				cube.Position = p.PastPosition
-				// next Cubes.
-				if len(p.Cubes) > 1 {
-					for i := range p.Cubes[1:] {
-						p.Cubes[i+1].PastPosition = p.Cubes[i+1].Position
-						p.Cubes[i+1].Position = p.Cubes[i].PastPosition
-						// checking a collision.
-						if p.Position == p.Cubes[i+1].Position {
-							p.Die()
-						}
-					}
+	if len(p.Cubes) != 0 {
+		// first cube.
+		cube := &p.Cubes[0]
+		cube.PastPosition = cube.Position
+		cube.Position = p.PastPosition
+		// next Cubes.
+		if len(p.Cubes) > 1 {
+			for i := range p.Cubes[1:] {
+				p.Cubes[i+1].PastPosition = p.Cubes[i+1].Position
+				p.Cubes[i+1].Position = p.Cubes[i].PastPosition
+				// checking a collision.
+				if p.Position == p.Cubes[i+1].Position {
+					p.Die()
 				}
-
 			}
+		}
 
-			// FeedChecker.
-			if g.Feed.Position == p.Position {
-				for i := 1; int32(i) <= g.Feed.Power; i++ {
-					if len(p.Cubes) == 0 {
-						p.Cubes = append(p.Cubes, Cube{p.Position, rl.Red, p.Position})
-					} else {
-						p.Cubes = append(p.Cubes, Cube{p.Cubes[len(p.Cubes)-1].PastPosition, rl.Red, p.Cubes[len(p.Cubes)-1].PastPosition})
-					}
-				}
-				g.Feed.RePlace()
-				g.Score += g.Feed.Power
+	}
+
+	// FeedChecker.
+	if g.Feed.Position == p.Position {
+		for i := 1; int32(i) <= g.Feed.Power; i++ {
+			if len(p.Cubes) == 0 {
+				p.Cubes = append(p.Cubes, Cube{p.Position, rl.Red, p.Position})
+			} else {
+				p.Cubes = append(p.Cubes, Cube{p.Cubes[len(p.Cubes)-1].PastPosition, rl.Red, p.Cubes[len(p.Cubes)-1].PastPosition})
 			}
+		}
+		g.Feed.RePlace()
+		g.Score += g.Feed.Power
+	}
 }
 
 func (game *Game) Start() {
@@ -213,12 +213,12 @@ func (game *Game) Start() {
 }
 
 func (feed *Feed) RePlace() {
-	var filledPlaces = append(getPosOfCubes(game.Player.Cubes),game.Player.Position) // positions of cubes + position of head.
+	var filledPlaces = append(getPosOfCubes(game.Player.Cubes), game.Player.Position) // positions of cubes + position of head.
 	var emptyPlaces []rl.Vector2
 	// note: places is variable being declared above methods.
-	for _, place := range places{
+	for _, place := range places {
 		if !filled(place, filledPlaces) {
-			emptyPlaces = append(emptyPlaces,place)
+			emptyPlaces = append(emptyPlaces, place)
 		}
 	}
 	feed.Position = emptyPlaces[rand.Intn(len(emptyPlaces))]
@@ -232,20 +232,19 @@ func (button *Button) IsClicked() bool {
 	return false
 }
 
-func filled(place rl.Vector2,filledPlaces []rl.Vector2) bool{
-	for _,filledPlace := range filledPlaces{
-		if place == filledPlace{
+func filled(place rl.Vector2, filledPlaces []rl.Vector2) bool {
+	for _, filledPlace := range filledPlaces {
+		if place == filledPlace {
 			return true
 		}
 	}
 	return false
 }
 
-func getPosOfCubes(cubes []Cube) []rl.Vector2{
+func getPosOfCubes(cubes []Cube) []rl.Vector2 {
 	var positions []rl.Vector2
-	for _, cube := range cubes{
+	for _, cube := range cubes {
 		positions = append(positions, cube.Position)
 	}
 	return positions
 }
-

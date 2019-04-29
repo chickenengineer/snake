@@ -20,12 +20,13 @@ type (
 	}
 
 	// entities.
+	// Cube is 1 part of snake, excluding head.
 	Cube struct {
 		Position     rl.Vector2
 		Color        rl.Color
 		PastPosition rl.Vector2
 	}
-
+	
 	Snake struct {
 		Living       bool
 		Color        rl.Color
@@ -34,13 +35,13 @@ type (
 		PastPosition rl.Vector2
 		Cubes        []Cube
 	}
-
+	// Feed is one meal for snake.
 	Feed struct {
 		Position rl.Vector2
 		Color    rl.Color
 		Power    int32
 	}
-
+	// Game has all game objects.
 	Game struct {
 		// menues.
 		Menu         Menu
