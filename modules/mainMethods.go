@@ -8,14 +8,14 @@ import (
 var (
 	game     *Game        // game (alias is "g" in methods).
 	places   []rl.Vector2 // all places.
-	Settings settings
+	settings Settings
 )
 
 // Init initilization. just once for execution of program.
 func (g *Game) Init() {
 	game = g
 	// Settings initilization.
-	Settings = settings{}
+	settings = Settings{}
 	// window initilization.
 	g.ScreenWidth = 500
 	g.ScreenHeight = 500
@@ -84,7 +84,7 @@ func (g *Game) Update() {
 			addPosition = rl.Vector2{10, 0}
 		}
 
-		if latestSaveTime < (rl.GetTime() - 0.05 + 0.01*float32(Settings.difficult)) {
+		if latestSaveTime < (rl.GetTime() - 0.05 + 0.01*float32(settings.Difficult)) {
 			g.Player.Move(g)
 		}
 	} else if g.Menu.Showed { // if Menu is Showed.
@@ -109,26 +109,26 @@ func (g *Game) Update() {
 	} else if g.SettingsMenu.Showed { // if SettingsMenu is Showed.
 		switch {
 		case g.SettingsMenu.Buttons[1].IsClicked(): // difficult.
-			switch Settings.difficult {
+			switch settings.Difficult {
 			case 0:
-				Settings.difficult++
+				settings.Difficult++
 				g.SettingsMenu.Buttons[1].Text = "Difficult: Normal"
 			case 1:
-				Settings.difficult++
+				settings.Difficult++
 				g.SettingsMenu.Buttons[1].Text = "Difficult: Hard"
 				g.SettingsMenu.Buttons[1].Color = rl.Red
 			case 2:
-				Settings.difficult = 0
+				settings.Difficult = 0
 				g.SettingsMenu.Buttons[1].Text = "Difficult: Easy"
 				g.SettingsMenu.Buttons[1].Color = rl.DarkGray
 			}
 		case g.SettingsMenu.Buttons[2].IsClicked(): // Settings.
-			if Settings.FPSShowed {
-				Settings.FPSShowed = false
+			if settings.FPSShowed {
+				settings.FPSShowed = false
 
 				g.SettingsMenu.Buttons[2].Text = "FPS Showed: NO"
 			} else {
-				Settings.FPSShowed = true
+				settings.FPSShowed = true
 
 				g.SettingsMenu.Buttons[2].Text = "FPS Showed: YES"
 			}
@@ -209,7 +209,7 @@ func (game *Game) Start() {
 	game.Menu.Showed = false
 	game.Feed.RePlace()
 	game.Score = 0
-	game.Feed.Power = int32(10 + 10*Settings.difficult)
+	game.Feed.Power = int32(10 + 10*settings.Difficult)
 }
 
 func (feed *Feed) RePlace() {

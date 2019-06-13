@@ -26,7 +26,7 @@ func (g *Game) Draw() {
 	}
 
 	// Drawing FPS.
-	if Settings.FPSShowed {
+	if settings.FPSShowed {
 		rl.DrawText(strconv.Itoa(int(rl.GetFPS())), 0, 0, 20, rl.White)
 	}
 	rl.ClearBackground(rl.Black)
